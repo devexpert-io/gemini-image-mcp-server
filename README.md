@@ -152,7 +152,15 @@ Edit this image: "Change the sky to be more dramatic with storm clouds", imagePa
 ```
 gemini-image-mcp-server/
 ├── src/
-│   └── index.ts          # Main server
+│   ├── index.ts          # Main server entry point
+│   ├── services/
+│   │   └── gemini.ts     # Gemini AI service
+│   ├── tools/
+│   │   ├── index.ts      # Tools exports
+│   │   ├── generateImage.ts  # Image generation tool
+│   │   └── editImage.ts  # Image editing tool
+│   └── types/
+│       └── index.ts      # Type definitions
 ├── dist/                 # Compiled files
 ├── package.json
 ├── tsconfig.json
