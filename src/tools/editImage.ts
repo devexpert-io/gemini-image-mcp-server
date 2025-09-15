@@ -1,6 +1,7 @@
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { GeminiService } from '../services/gemini.js';
-import { EditImageArgs } from '../types/index.js';
+import { ImageService } from '../services/imageService.js';
+import { EditImageArgs } from '../types';
 
 export const editImageTool: Tool = {
   name: 'edit_image',
@@ -29,7 +30,7 @@ export const editImageTool: Tool = {
   },
 };
 
-export async function handleEditImage(args: EditImageArgs, geminiService: GeminiService) {
+export async function handleEditImage(args: EditImageArgs, geminiService: GeminiService, imageService: ImageService) {
   if (!args.imagePath) {
     throw new Error('Image path is required');
   }
@@ -37,18 +38,30 @@ export async function handleEditImage(args: EditImageArgs, geminiService: Gemini
     throw new Error('Description is required');
   }
 
-  const result = await geminiService.editImage(args);
+  // Edit image with Gemini
+  const imageData = await geminiService.editImage(args);
+
+  // Generate output description for filename
+  let outputDescription = args.description.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_').slice(0, 30);
+  if (!outputDescription) outputDescription = 'edited';
+
+  // Save image with watermark if needed
+  const filePath = await imageService.saveImage(imageData, {
+    outputPath: args.outputPath,
+    description: outputDescription,
+    logoPath: args.logoPath
+  });
 
   return {
     content: [
       {
         type: 'text',
-        text: `Image edited successfully with description: "${args.description}"\nSaved to: ${result.filePath}`,
+        text: `Image edited successfully with description: "${args.description}"\nSaved to: ${filePath}`,
       },
       {
         type: 'image',
-        data: result.base64,
-        mimeType: result.mimeType,
+        data: imageData.base64,
+        mimeType: imageData.mimeType,
       },
     ],
   };

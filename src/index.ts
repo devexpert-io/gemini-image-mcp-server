@@ -8,17 +8,19 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 
 import { GeminiService } from './services/gemini.js';
+import { ImageService } from './services/imageService.js';
 import {
   generateImageTool,
   handleGenerateImage,
   editImageTool,
   handleEditImage
-} from './tools/index.js';
-import { GenerateImageArgs, EditImageArgs } from './types/index.js';
+} from './tools';
+import { GenerateImageArgs, EditImageArgs } from './types';
 
 class GeminiImageMCPServer {
   private server: Server;
   private geminiService!: GeminiService;
+  private imageService!: ImageService;
 
   constructor() {
     this.server = new Server(
@@ -33,11 +35,11 @@ class GeminiImageMCPServer {
       }
     );
 
-    this.initializeGemini();
+    this.initializeServices();
     this.setupToolHandlers();
   }
 
-  private initializeGemini() {
+  private initializeServices() {
     const apiKey = process.env.GOOGLE_API_KEY;
     if (!apiKey) {
       console.error('Error: GOOGLE_API_KEY environment variable is required');
@@ -45,6 +47,7 @@ class GeminiImageMCPServer {
     }
 
     this.geminiService = new GeminiService(apiKey);
+    this.imageService = new ImageService();
   }
 
   private setupToolHandlers() {
@@ -58,10 +61,10 @@ class GeminiImageMCPServer {
       try {
         if (request.params.name === 'generate_image') {
           const args = request.params.arguments as unknown as GenerateImageArgs;
-          return await handleGenerateImage(args, this.geminiService);
+          return await handleGenerateImage(args, this.geminiService, this.imageService);
         } else if (request.params.name === 'edit_image') {
           const args = request.params.arguments as unknown as EditImageArgs;
-          return await handleEditImage(args, this.geminiService);
+          return await handleEditImage(args, this.geminiService, this.imageService);
         } else {
           throw new Error(`Unknown tool: ${request.params.name}`);
         }

@@ -1,6 +1,7 @@
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { GeminiService } from '../services/gemini.js';
-import { GenerateImageArgs } from '../types/index.js';
+import { ImageService } from '../services/imageService.js';
+import { GenerateImageArgs } from '../types';
 
 export const generateImageTool: Tool = {
   name: 'generate_image',
@@ -35,23 +36,31 @@ export const generateImageTool: Tool = {
   },
 };
 
-export async function handleGenerateImage(args: GenerateImageArgs, geminiService: GeminiService) {
+export async function handleGenerateImage(args: GenerateImageArgs, geminiService: GeminiService, imageService: ImageService) {
   if (!args.description) {
     throw new Error('Description is required');
   }
 
-  const result = await geminiService.generateImage(args);
+  // Generate image with Gemini
+  const imageData = await geminiService.generateImage(args);
+
+  // Save image with watermark if needed
+  const filePath = await imageService.saveImage(imageData, {
+    outputPath: args.outputPath,
+    description: args.description,
+    logoPath: args.logoPath
+  });
 
   return {
     content: [
       {
         type: 'text',
-        text: `Image generated successfully with description: "${args.description}"\nSaved to: ${result.filePath}`,
+        text: `Image generated successfully with description: "${args.description}"\nSaved to: ${filePath}`,
       },
       {
         type: 'image',
-        data: result.base64,
-        mimeType: result.mimeType,
+        data: imageData.base64,
+        mimeType: imageData.mimeType,
       },
     ],
   };

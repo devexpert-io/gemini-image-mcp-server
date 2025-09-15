@@ -9,6 +9,7 @@ A Model Context Protocol (MCP) server that enables image generation and editing 
 - 📱 Optimized for social media with 1:1 format by default
 - 🎯 Custom style support
 - ✏️ Image editing capabilities with AI-powered modifications
+- 🏷️ **Watermark support** - Add logo watermarks to generated and edited images
 - 💾 Automatic saving of images to local files
 - 📁 Flexible output path configuration
 - 🛡️ Customizable safety settings
@@ -89,6 +90,7 @@ Generates an image based on a text description.
 - `aspectRatio` (string, optional): Aspect ratio (`1:1`, `16:9`, `9:16`, `4:3`, `3:4`). Default: `1:1`
 - `style` (string, optional): Additional style (e.g., "minimalist", "colorful", "professional", "artistic")
 - `outputPath` (string, optional): Path where to save the image. If not specified, saves in current directory
+- `logoPath` (string, optional): Path to logo file to add as watermark in bottom-right corner
 
 **Usage Examples:**
 
@@ -107,6 +109,11 @@ Generate an image of a space cat, outputPath: "./images/"
 Generate an image of a flying pizza, outputPath: "./my_images/epic_pizza.png"
 ```
 
+```
+# With watermark
+Generate an image of a mountain landscape, logoPath: "./my_logo.png"
+```
+
 ### `edit_image`
 
 Edits an existing image based on text instructions.
@@ -115,6 +122,7 @@ Edits an existing image based on text instructions.
 - `imagePath` (string, required): Path to the image file to edit (absolute or relative path)
 - `description` (string, required): Detailed description of the changes to make to the image. Be specific about what you want to modify, add, remove, or enhance
 - `outputPath` (string, optional): Path where to save the edited image. If not specified, saves in current directory with descriptive name
+- `logoPath` (string, optional): Path to logo file to add as watermark in bottom-right corner
 
 **Usage Examples:**
 
@@ -132,6 +140,38 @@ Edit this image: "Remove the background and make it transparent", imagePath: "./
 # Specific edits
 Edit this image: "Change the sky to be more dramatic with storm clouds", imagePath: "./landscape.jpg", outputPath: "./final_landscape.png"
 ```
+
+```
+# With watermark
+Edit this image: "Brighten the colors", imagePath: "./photo.jpg", logoPath: "./brand_logo.png"
+```
+
+## Watermark Functionality
+
+Both `generate_image` and `edit_image` tools support adding watermarks to your images:
+
+**Features:**
+- 🏷️ Add logo watermarks to any generated or edited image
+- 📍 Automatic positioning in bottom-right corner
+- 📏 Smart sizing (25% of image width, maintaining aspect ratio)
+- 🎯 Consistent spacing (3% padding from edges)
+- 🖼️ Supports PNG, JPG, WebP logo files
+- ⚡ Only applied when `logoPath` parameter is provided
+
+**Usage:**
+```bash
+# For image generation
+logoPath: "./my-brand-logo.png"
+
+# For image editing
+logoPath: "./watermark.jpg"
+```
+
+**Watermark Specifications:**
+- Position: Bottom-right corner
+- Size: 25% of image width (maintains logo aspect ratio)
+- Padding: 3% of image width from bottom and right edges
+- Blend mode: Over (logo appears on top of image)
 
 **Save Functionality:**
 - Default: Images are saved in the directory from where the MCP client is executed

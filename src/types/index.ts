@@ -13,8 +13,3 @@ export interface EditImageArgs {
   logoPath?: string;
 }
 
-export interface ImageResult {
-  base64: string;
-  mimeType: string;
-  filePath: string;
-}
