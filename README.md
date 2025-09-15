@@ -1,0 +1,164 @@
+# Gemini Image MCP Server
+
+A Model Context Protocol (MCP) server that enables image generation using Google Gemini AI. Optimized for creating eye-catching social media images with square (1:1) format by default.
+
+## Features
+
+- ✨ Image generation with Google Gemini AI
+- 🎨 Multiple aspect ratios (1:1, 16:9, 9:16, 4:3, 3:4)
+- 📱 Optimized for social media with 1:1 format by default
+- 🎯 Custom style support
+- 💾 Automatic saving of images to local files
+- 📁 Flexible output path configuration
+- 🛡️ Customizable safety settings
+
+## Installation
+
+1. Clone this repository
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Build the project:
+```bash
+npm run build
+```
+
+## Configuration
+
+### Environment Variables
+
+You need to configure your Google AI API key:
+
+```bash
+export GOOGLE_API_KEY="your-api-key-here"
+```
+
+### Getting Google AI API Key
+
+1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create a new API key
+3. Copy the key and set it as an environment variable
+
+## Usage with Claude Desktop
+
+Add the following configuration to your `claude_desktop_config.json` file:
+
+```json
+{
+  "mcpServers": {
+    "gemini-image": {
+      "command": "node",
+      "args": ["/full/path/to/project/dist/index.js"],
+  "env": {
+        "GOOGLE_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
+```
+
+## Usage with Other MCP Clients
+
+### Generic Configuration
+
+```json
+{
+  "servers": {
+    "gemini-image": {
+      "command": "node",
+      "args": ["/full/path/to/project/dist/index.js"],
+      "env": {
+        "GOOGLE_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
+```
+
+## Available Tools
+
+### `generate_image`
+
+Generates an image based on a text description.
+
+**Parameters:**
+- `description` (string, required): Detailed description of the image to generate
+- `aspectRatio` (string, optional): Aspect ratio (`1:1`, `16:9`, `9:16`, `4:3`, `3:4`). Default: `1:1`
+- `style` (string, optional): Additional style (e.g., "minimalist", "colorful", "professional", "artistic")
+- `outputPath` (string, optional): Path where to save the image. If not specified, saves in current directory
+
+**Usage Examples:**
+
+```
+# Basic - saves to current directory
+Generate an image of a mountain landscape at sunset with warm colors and minimalist style
+```
+
+```
+# With custom path
+Generate an image of a space cat, outputPath: "./images/"
+```
+
+```
+# With specific filename
+Generate an image of a flying pizza, outputPath: "./my_images/epic_pizza.png"
+```
+
+**Save Functionality:**
+- Default: Images are saved in the directory from where the MCP client is executed
+- Automatic naming: Generated based on description, date and time
+- Supported formats: PNG, JPG, WebP (depending on what Gemini returns)
+- Automatic creation: Creates necessary folders if they don't exist
+
+## Development
+
+### Available Scripts
+
+- `npm run build`: Compiles TypeScript to JavaScript
+- `npm run dev`: Development mode with automatic reload
+- `npm start`: Runs the compiled server
+
+### Project Structure
+
+```
+gemini-image-mcp-server/
+├── src/
+│   └── index.ts          # Main server
+├── dist/                 # Compiled files
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+## Troubleshooting
+
+### Error: "GOOGLE_API_KEY environment variable is required"
+
+Make sure you have configured the `GOOGLE_API_KEY` environment variable with your Google AI API key.
+
+### Error: "Could not generate image"
+
+- Verify that your API key is valid and has permissions for the `gemini-2.5-flash-image-preview` model
+- Ensure the description doesn't contain content that might be blocked by safety filters
+
+### File saving error
+
+- Verify you have write permissions in the specified path
+- Make sure the path is valid and accessible
+- If specifying a folder, end it with `/`
+
+### Server not responding
+
+- Verify the server is running correctly
+- Check logs in stderr for error messages
+- Make sure the MCP client is configured correctly
+
+## License
+
+MIT
+
+## Contributing
+
+Contributions are welcome. Please open an issue before making significant changes.
