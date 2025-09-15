@@ -26,6 +26,10 @@ export const generateImageTool: Tool = {
         type: 'string',
         description: 'Path where to save the image (optional). If not specified, saves in current directory. Can be a folder or complete path with filename.',
       },
+      logoPath: {
+        type: 'string',
+        description: 'Path to logo file to add as watermark in bottom-right corner (optional)',
+      },
     },
     required: ['description'],
   },

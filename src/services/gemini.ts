@@ -2,6 +2,7 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/ge
 import { writeFile, mkdir, readFile } from 'fs/promises';
 import { join, resolve, extname } from 'path';
 import { existsSync } from 'fs';
+import sharp from 'sharp';
 import { GenerateImageArgs, EditImageArgs, ImageResult } from '../types/index.js';
 
 export class GeminiService {
@@ -70,7 +71,8 @@ export class GeminiService {
           part.inlineData.data,
           part.inlineData.mimeType,
           args.outputPath,
-          args.description
+          args.description,
+          args.logoPath
         );
 
         return {
@@ -134,7 +136,8 @@ export class GeminiService {
           part.inlineData.data,
           part.inlineData.mimeType,
           args.outputPath,
-          outputDescription
+          outputDescription,
+          args.logoPath
         );
 
         return {
@@ -152,7 +155,8 @@ export class GeminiService {
     base64Data: string,
     mimeType: string,
     outputPath?: string,
-    description?: string
+    description?: string,
+    logoPath?: string
   ): Promise<string> {
     // Determine file extension based on mimeType
     const extension = mimeType === 'image/png' ? '.png' :
@@ -187,11 +191,58 @@ export class GeminiService {
       }
     }
 
-    // Convert base64 to buffer and save
-    const buffer = Buffer.from(base64Data, 'base64');
+    // Convert base64 to buffer
+    let buffer = Buffer.from(base64Data, 'base64');
+
+    // Add watermark if logoPath is provided
+    if (logoPath && existsSync(resolve(logoPath))) {
+      buffer = Buffer.from(await this.addWatermark(buffer, logoPath));
+    }
+
     await writeFile(finalPath, buffer);
 
     return finalPath;
+  }
+
+  private async addWatermark(imageBuffer: Buffer, logoPath: string): Promise<Buffer> {
+    const resolvedLogoPath = resolve(logoPath);
+
+    // Get image dimensions
+    const imageInfo = await sharp(imageBuffer).metadata();
+    const imageWidth = imageInfo.width || 1024;
+    const imageHeight = imageInfo.height || 1024;
+
+    // Calculate logo size (25% of image width, maintaining aspect ratio)
+    const logoSize = Math.floor(imageWidth * 0.25);
+
+    // Resize logo and get actual dimensions
+    const processedLogo = await sharp(resolvedLogoPath)
+      .resize(logoSize, logoSize, {
+        fit: 'inside',
+        withoutEnlargement: true
+      })
+      .toBuffer();
+
+    // Get actual dimensions of the processed logo
+    const logoInfo = await sharp(processedLogo).metadata();
+    const actualLogoWidth = logoInfo.width || logoSize;
+    const actualLogoHeight = logoInfo.height || logoSize;
+
+    // Add watermark to bottom-right corner with consistent padding
+    const padding = Math.floor(imageWidth * 0.03); // 3% of image width for consistent spacing
+    const left = imageWidth - actualLogoWidth - padding;
+    const top = imageHeight - actualLogoHeight - padding;
+
+    return await sharp(imageBuffer)
+      .composite([
+        {
+          input: processedLogo,
+          left,
+          top,
+          blend: 'over'
+        }
+      ])
+      .toBuffer();
   }
 
   private async ensureDirectoryExists(dirPath: string): Promise<void> {

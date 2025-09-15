@@ -20,6 +20,10 @@ export const editImageTool: Tool = {
         type: 'string',
         description: 'Path where to save the edited image (optional). If not specified, saves in current directory with "_edited" suffix.',
       },
+      logoPath: {
+        type: 'string',
+        description: 'Path to logo file to add as watermark in bottom-right corner (optional)',
+      },
     },
     required: ['imagePath', 'description'],
   },

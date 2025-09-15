@@ -21,7 +21,8 @@
   "license": "MIT",
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
-    "@modelcontextprotocol/sdk": "^1.0.4"
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "sharp": "^0.34.3"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
