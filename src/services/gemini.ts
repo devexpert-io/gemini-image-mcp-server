@@ -51,11 +51,6 @@ export class GeminiService {
       fullPrompt += ` The style should be ${args.style}.`;
     }
 
-    // Social media optimizations for 1:1 format
-    if (aspectRatio === '1:1') {
-      fullPrompt += ' The composition should be attractive for social media, with well-centered elements and vibrant colors.';
-    }
-
     const model = this.genAI.getGenerativeModel({
       model: 'gemini-2.5-flash-image-preview',
       safetySettings: this.getSafetySettings()
