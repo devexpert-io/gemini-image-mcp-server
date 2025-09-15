@@ -1,7 +1,7 @@
 {
   "name": "gemini-image-mcp-server",
   "version": "1.0.0",
-  "description": "MCP Server for generating images with Google Gemini AI",
+  "description": "MCP Server for generating and editing images with Google Gemini AI",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {

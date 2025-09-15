@@ -1,6 +1,6 @@
 # Gemini Image MCP Server
 
-A Model Context Protocol (MCP) server that enables image generation using Google Gemini AI. Optimized for creating eye-catching social media images with square (1:1) format by default.
+A Model Context Protocol (MCP) server that enables image generation and editing using Google Gemini AI. Optimized for creating eye-catching social media images with square (1:1) format by default.
 
 ## Features
 
@@ -8,6 +8,7 @@ A Model Context Protocol (MCP) server that enables image generation using Google
 - 🎨 Multiple aspect ratios (1:1, 16:9, 9:16, 4:3, 3:4)
 - 📱 Optimized for social media with 1:1 format by default
 - 🎯 Custom style support
+- ✏️ Image editing capabilities with AI-powered modifications
 - 💾 Automatic saving of images to local files
 - 📁 Flexible output path configuration
 - 🛡️ Customizable safety settings
@@ -104,6 +105,32 @@ Generate an image of a space cat, outputPath: "./images/"
 ```
 # With specific filename
 Generate an image of a flying pizza, outputPath: "./my_images/epic_pizza.png"
+```
+
+### `edit_image`
+
+Edits an existing image based on text instructions.
+
+**Parameters:**
+- `imagePath` (string, required): Path to the image file to edit (absolute or relative path)
+- `description` (string, required): Detailed description of the changes to make to the image. Be specific about what you want to modify, add, remove, or enhance
+- `outputPath` (string, optional): Path where to save the edited image. If not specified, saves in current directory with descriptive name
+
+**Usage Examples:**
+
+```
+# Basic edit - saves to current directory
+Edit this image: "Add a red hat to the person in the image", imagePath: "./my_photo.jpg"
+```
+
+```
+# With custom output path
+Edit this image: "Remove the background and make it transparent", imagePath: "./portrait.png", outputPath: "./edited/"
+```
+
+```
+# Specific edits
+Edit this image: "Change the sky to be more dramatic with storm clouds", imagePath: "./landscape.jpg", outputPath: "./final_landscape.png"
 ```
 
 **Save Functionality:**
