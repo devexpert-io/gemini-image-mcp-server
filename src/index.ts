@@ -14,7 +14,7 @@ import {
   handleGenerateImage,
   editImageTool,
   handleEditImage
-} from './tools';
+} from './tools/index.js';
 import { GenerateImageArgs, EditImageArgs } from './types';
 
 class GeminiImageMCPServer {
