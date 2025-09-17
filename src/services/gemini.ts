@@ -2,7 +2,7 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/ge
 import { readFile } from 'fs/promises';
 import { resolve, extname } from 'path';
 import { existsSync } from 'fs';
-import { GenerateImageArgs, EditImageArgs } from '../types';
+import { GenerateImageArgs } from '../types';
 
 export interface ImageData {
   base64: string;
@@ -56,7 +56,25 @@ export class GeminiService {
       safetySettings: this.getSafetySettings()
     });
 
-    const response = await model.generateContent(fullPrompt);
+    // If images are provided as context, attach them as inline parts
+    const parts: any[] = [fullPrompt];
+    if (args.images && args.images.length > 0) {
+      for (const imgPathRaw of args.images) {
+        const imagePath = resolve(imgPathRaw);
+        if (!existsSync(imagePath)) {
+          throw new Error(`Context image not found: ${imagePath}`);
+        }
+        const buffer = await readFile(imagePath);
+        const base64 = buffer.toString('base64');
+        const ext = extname(imagePath).toLowerCase();
+        const mimeType = ext === '.png' ? 'image/png' :
+                        ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' :
+                        ext === '.webp' ? 'image/webp' : 'image/png';
+        parts.push({ inlineData: { mimeType, data: base64 } });
+      }
+    }
+
+    const response = await model.generateContent(parts);
 
     // Extract image from response
     const candidate = response.response.candidates?.[0];
@@ -76,56 +94,6 @@ export class GeminiService {
     throw new Error('No image found in response');
   }
 
-  async editImage(args: EditImageArgs): Promise<ImageData> {
-    // Read the input image
-    const imagePath = resolve(args.imagePath);
-    if (!existsSync(imagePath)) {
-      throw new Error(`Image file not found: ${imagePath}`);
-    }
-
-    const imageBuffer = await readFile(imagePath);
-    const imageBase64 = imageBuffer.toString('base64');
-
-    // Determine MIME type from file extension
-    const extension = extname(imagePath).toLowerCase();
-    const mimeType = extension === '.png' ? 'image/png' :
-                    extension === '.jpg' || extension === '.jpeg' ? 'image/jpeg' :
-                    extension === '.webp' ? 'image/webp' : 'image/png';
-
-    const model = this.genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash-image-preview',
-      safetySettings: this.getSafetySettings()
-    });
-
-    // Create the edit prompt
-    const editPrompt = `Edit this image based on the following instructions: ${args.description}`;
-
-    const response = await model.generateContent([
-      editPrompt,
-      {
-        inlineData: {
-          mimeType,
-          data: imageBase64,
-        },
-      },
-    ]);
-
-    // Extract the edited image from response
-    const candidate = response.response.candidates?.[0];
-    if (!candidate?.content?.parts) {
-      throw new Error('Could not edit image');
-    }
-
-    for (const part of candidate.content.parts) {
-      if (part.inlineData?.data && part.inlineData?.mimeType) {
-        return {
-          base64: part.inlineData.data,
-          mimeType: part.inlineData.mimeType,
-        };
-      }
-    }
-
-    throw new Error('No edited image found in response');
-  }
+  // Editing is unified into generation with context images.
 
 }

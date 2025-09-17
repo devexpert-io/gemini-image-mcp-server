@@ -9,13 +9,8 @@ import {
 
 import { GeminiService } from './services/gemini.js';
 import { ImageService } from './services/imageService.js';
-import {
-  generateImageTool,
-  handleGenerateImage,
-  editImageTool,
-  handleEditImage
-} from './tools/index.js';
-import { GenerateImageArgs, EditImageArgs } from './types';
+import { generateImageTool, handleGenerateImage } from './tools/index.js';
+import { GenerateImageArgs } from './types';
 
 class GeminiImageMCPServer {
   private server: Server;
@@ -53,7 +48,7 @@ class GeminiImageMCPServer {
   private setupToolHandlers() {
     this.server.setRequestHandler(ListToolsRequestSchema, async () => {
       return {
-        tools: [generateImageTool, editImageTool],
+        tools: [generateImageTool],
       };
     });
 
@@ -62,16 +57,12 @@ class GeminiImageMCPServer {
         if (request.params.name === 'generate_image') {
           const args = request.params.arguments as unknown as GenerateImageArgs;
           return await handleGenerateImage(args, this.geminiService, this.imageService);
-        } else if (request.params.name === 'edit_image') {
-          const args = request.params.arguments as unknown as EditImageArgs;
-          return await handleEditImage(args, this.geminiService, this.imageService);
         } else {
           throw new Error(`Unknown tool: ${request.params.name}`);
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        const toolName = request.params.name === 'generate_image' ? 'generating' : 'editing';
-        throw new Error(`Error ${toolName} image: ${errorMessage}`);
+        throw new Error(`Error generating image: ${errorMessage}`);
       }
     });
   }

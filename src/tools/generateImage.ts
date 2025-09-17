@@ -5,13 +5,18 @@ import { GenerateImageArgs } from '../types';
 
 export const generateImageTool: Tool = {
   name: 'generate_image',
-  description: 'Generate an image using Google Gemini AI based on a text description. Optimized for social media images with 1:1 format by default.',
+  description: 'Create an image using Google Gemini AI from a text description, optionally providing one or more context images to guide the result.',
   inputSchema: {
     type: 'object',
     properties: {
       description: {
         type: 'string',
         description: 'Detailed description of the image to generate. For better social media results, include details about colors, style and composition.',
+      },
+      images: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Optional array of image file paths to use as visual context (absolute or relative).',
       },
       aspectRatio: {
         type: 'string',
@@ -55,7 +60,7 @@ export async function handleGenerateImage(args: GenerateImageArgs, geminiService
     content: [
       {
         type: 'text',
-        text: `Image generated successfully with description: "${args.description}"\nSaved to: ${filePath}`,
+        text: `Image generated successfully with description: "${args.description}"${args.images?.length ? `\nUsing ${args.images.length} context image(s)` : ''}\nSaved to: ${filePath}`,
       },
       {
         type: 'image',

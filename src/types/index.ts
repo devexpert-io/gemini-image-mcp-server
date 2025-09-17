@@ -4,12 +4,5 @@ export interface GenerateImageArgs {
   style?: string;
   outputPath?: string;
   logoPath?: string;
+  images?: string[]; // Optional array of image paths used as visual context
 }
-
-export interface EditImageArgs {
-  imagePath: string;
-  description: string;
-  outputPath?: string;
-  logoPath?: string;
-}
-

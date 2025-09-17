@@ -1,6 +1,6 @@
 # Gemini Image MCP Server
 
-A Model Context Protocol (MCP) server that enables image generation and editing using Google Gemini AI. Optimized for creating eye-catching social media images with square (1:1) format by default.
+A Model Context Protocol (MCP) server for image generation using Google Gemini AI. Supports optional context images to guide results. Optimized for creating eye‑catching social media images with square (1:1) format by default.
 
 ## Features
 
@@ -8,7 +8,7 @@ A Model Context Protocol (MCP) server that enables image generation and editing 
 - 🎨 Multiple aspect ratios (1:1, 16:9, 9:16, 4:3, 3:4)
 - 📱 Optimized for social media with 1:1 format by default
 - 🎯 Custom style support
-- ✏️ Image editing capabilities with AI-powered modifications
+- 🧩 Context images to guide or modify results
 - 🏷️ **Watermark support** - Add logo watermarks to generated and edited images
 - 💾 Automatic saving of images to local files
 - 📁 Flexible output path configuration
@@ -43,27 +43,7 @@ export GOOGLE_API_KEY="your-api-key-here"
 2. Create a new API key
 3. Copy the key and set it as an environment variable
 
-## Usage with Claude Desktop
-
-Add the following configuration to your `claude_desktop_config.json` file:
-
-```json
-{
-  "mcpServers": {
-    "gemini-image": {
-      "command": "node",
-      "args": ["/full/path/to/project/dist/index.js"],
-  "env": {
-        "GOOGLE_API_KEY": "your-api-key-here"
-      }
-    }
-  }
-}
-```
-
-## Usage with Other MCP Clients
-
-### Generic Configuration
+## Client Configuration
 
 ```json
 {
@@ -83,72 +63,41 @@ Add the following configuration to your `claude_desktop_config.json` file:
 
 ### `generate_image`
 
-Generates an image based on a text description.
+Creates an image from a text description, optionally using one or more images as visual context.
 
 **Parameters:**
-- `description` (string, required): Detailed description of the image to generate
-- `aspectRatio` (string, optional): Aspect ratio (`1:1`, `16:9`, `9:16`, `4:3`, `3:4`). Default: `1:1`
-- `style` (string, optional): Additional style (e.g., "minimalist", "colorful", "professional", "artistic")
-- `outputPath` (string, optional): Path where to save the image. If not specified, saves in current directory
-- `logoPath` (string, optional): Path to logo file to add as watermark in bottom-right corner
+- `description` (string, required): Detailed description of the desired image.
+- `images` (string[], optional): Array of image paths used as context (absolute or relative). Use this to “edit” or guide style/content.
+- `aspectRatio` (string, optional): Aspect ratio (`1:1`, `16:9`, `9:16`, `4:3`, `3:4`). Default: `1:1`.
+- `style` (string, optional): Additional style (e.g., "minimalist", "colorful", "professional", "artistic").
+- `outputPath` (string, optional): Where to save the image. If omitted, saves in current directory.
+- `logoPath` (string, optional): Path to logo file to add as a bottom‑right watermark.
 
 **Usage Examples:**
 
 ```
 # Basic - saves to current directory
-Generate an image of a mountain landscape at sunset with warm colors and minimalist style
+Generate an image of a mountain landscape at sunset with warm, minimalist style
 ```
 
 ```
-# With custom path
-Generate an image of a space cat, outputPath: "./images/"
+# With context image (edit-like)
+Generate an image: "Make the sky more dramatic with storm clouds", images: ["./landscape.jpg"], outputPath: "./edited/"
 ```
 
 ```
-# With specific filename
-Generate an image of a flying pizza, outputPath: "./my_images/epic_pizza.png"
+# Multiple context images
+Generate an image combining style of a logo and a photo, images: ["./photo.jpg", "./logo.png"], style: "professional"
 ```
 
 ```
-# With watermark
-Generate an image of a mountain landscape, logoPath: "./my_logo.png"
-```
-
-### `edit_image`
-
-Edits an existing image based on text instructions.
-
-**Parameters:**
-- `imagePath` (string, required): Path to the image file to edit (absolute or relative path)
-- `description` (string, required): Detailed description of the changes to make to the image. Be specific about what you want to modify, add, remove, or enhance
-- `outputPath` (string, optional): Path where to save the edited image. If not specified, saves in current directory with descriptive name
-- `logoPath` (string, optional): Path to logo file to add as watermark in bottom-right corner
-
-**Usage Examples:**
-
-```
-# Basic edit - saves to current directory
-Edit this image: "Add a red hat to the person in the image", imagePath: "./my_photo.jpg"
-```
-
-```
-# With custom output path
-Edit this image: "Remove the background and make it transparent", imagePath: "./portrait.png", outputPath: "./edited/"
-```
-
-```
-# Specific edits
-Edit this image: "Change the sky to be more dramatic with storm clouds", imagePath: "./landscape.jpg", outputPath: "./final_landscape.png"
-```
-
-```
-# With watermark
-Edit this image: "Brighten the colors", imagePath: "./photo.jpg", logoPath: "./brand_logo.png"
+# Custom path and watermark
+Generate an image of a space cat, outputPath: "./images/epic_pizza.png", logoPath: "./my_logo.png"
 ```
 
 ## Watermark Functionality
 
-Both `generate_image` and `edit_image` tools support adding watermarks to your images:
+The `generate_image` tool supports adding watermarks to your images:
 
 **Features:**
 - 🏷️ Add logo watermarks to any generated or edited image
@@ -163,7 +112,7 @@ Both `generate_image` and `edit_image` tools support adding watermarks to your i
 # For image generation
 logoPath: "./my-brand-logo.png"
 
-# For image editing
+# With context images
 logoPath: "./watermark.jpg"
 ```
 
@@ -197,8 +146,7 @@ gemini-image-mcp-server/
 │   │   └── gemini.ts     # Gemini AI service
 │   ├── tools/
 │   │   ├── index.ts      # Tools exports
-│   │   ├── generateImage.ts  # Image generation tool
-│   │   └── editImage.ts  # Image editing tool
+│   │   └── generateImage.ts  # Unified image tool (with optional context images)
 │   └── types/
 │       └── index.ts      # Type definitions
 ├── dist/                 # Compiled files
