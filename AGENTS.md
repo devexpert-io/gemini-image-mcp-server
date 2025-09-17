@@ -41,7 +41,7 @@ GOOGLE_API_KEY=your-key npm run build && npm start
 ## Security & Configuration Tips
 - Required env: `GOOGLE_API_KEY` (do not commit keys). Use `.env.example` as reference.
 - Large file handling: image outputs are written to disk; prefer relative `outputPath` under a dedicated folder (e.g., `./images/`).
-- Watermarks: optional via `logoPath`; ensure assets are licensed for use.
+- Watermarks: optional via `watermarkPath`; ensure assets are licensed for use.
 
 ## Architecture Overview
 - MCP server exposes one tool: `generate_image` (accepts optional `images[]` as visual context).

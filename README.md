@@ -9,7 +9,7 @@ A Model Context Protocol (MCP) server for image generation using Google Gemini A
 - 📱 Optimized for social media with 1:1 format by default
 - 🎯 Custom style support
 - 🧩 Context images to guide or modify results
-- 🏷️ **Watermark support** - Add logo watermarks to generated and edited images
+- 🏷️ **Watermark support** - Overlay watermark images on generated results
 - 💾 Automatic saving of images to local files
 - 📁 Flexible output path configuration
 - 🛡️ Customizable safety settings
@@ -71,7 +71,8 @@ Creates an image from a text description, optionally using one or more images as
 - `aspectRatio` (string, optional): Aspect ratio (`1:1`, `16:9`, `9:16`, `4:3`, `3:4`). Default: `1:1`.
 - `style` (string, optional): Additional style (e.g., "minimalist", "colorful", "professional", "artistic").
 - `outputPath` (string, optional): Where to save the image. If omitted, saves in current directory.
-- `logoPath` (string, optional): Path to logo file to add as a bottom‑right watermark.
+- `watermarkPath` (string, optional): Path to watermark image to overlay.
+- `watermarkPosition` (string, optional): One of `top-left`, `top-right`, `bottom-left`, `bottom-right`. Default: `bottom-right`.
 
 **Usage Examples:**
 
@@ -91,8 +92,8 @@ Generate an image combining style of a logo and a photo, images: ["./photo.jpg",
 ```
 
 ```
-# Custom path and watermark
-Generate an image of a space cat, outputPath: "./images/epic_pizza.png", logoPath: "./my_logo.png"
+# Custom path and watermark (top-left)
+Generate an image of a space cat, outputPath: "./images/epic_pizza.png", watermarkPath: "./my_logo.png", watermarkPosition: "top-left"
 ```
 
 ## Watermark Functionality
@@ -100,27 +101,27 @@ Generate an image of a space cat, outputPath: "./images/epic_pizza.png", logoPat
 The `generate_image` tool supports adding watermarks to your images:
 
 **Features:**
-- 🏷️ Add logo watermarks to any generated or edited image
-- 📍 Automatic positioning in bottom-right corner
+- 🏷️ Add image watermarks to any generated output
+- 📍 Position in any corner (`watermarkPosition`)
 - 📏 Smart sizing (25% of image width, maintaining aspect ratio)
 - 🎯 Consistent spacing (3% padding from edges)
-- 🖼️ Supports PNG, JPG, WebP logo files
-- ⚡ Only applied when `logoPath` parameter is provided
+- 🖼️ Supports PNG, JPG, WebP watermark files
+- ⚡ Only applied when `watermarkPath` parameter is provided
 
 **Usage:**
 ```bash
 # For image generation
-logoPath: "./my-brand-logo.png"
+watermarkPath: "./my-brand-logo.png"
 
 # With context images
-logoPath: "./watermark.jpg"
+watermarkPath: "./watermark.jpg"
 ```
 
 **Watermark Specifications:**
-- Position: Bottom-right corner
-- Size: 25% of image width (maintains logo aspect ratio)
-- Padding: 3% of image width from bottom and right edges
-- Blend mode: Over (logo appears on top of image)
+- Position: Configurable corner via `watermarkPosition`
+- Size: 25% of image width (maintains watermark aspect ratio)
+- Padding: 3% of image width from the selected edges
+- Blend mode: Over (watermark appears on top of image)
 
 **Save Functionality:**
 - Default: Images are saved in the directory from where the MCP client is executed

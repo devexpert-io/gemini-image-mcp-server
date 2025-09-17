@@ -18,6 +18,12 @@ export const generateImageTool: Tool = {
         items: { type: 'string' },
         description: 'Optional array of image file paths to use as visual context (absolute or relative).',
       },
+      watermarkPosition: {
+        type: 'string',
+        enum: ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
+        description: 'Optional watermark position when using `watermarkPath`.',
+        default: 'bottom-right',
+      },
       aspectRatio: {
         type: 'string',
         enum: ['1:1', '16:9', '9:16', '4:3', '3:4'],
@@ -32,9 +38,9 @@ export const generateImageTool: Tool = {
         type: 'string',
         description: 'Path where to save the image (optional). If not specified, saves in current directory. Can be a folder or complete path with filename.',
       },
-      logoPath: {
+      watermarkPath: {
         type: 'string',
-        description: 'Path to logo file to add as watermark in bottom-right corner (optional)',
+        description: 'Path to watermark image file to overlay in a corner (optional)',
       },
     },
     required: ['description'],
@@ -53,14 +59,15 @@ export async function handleGenerateImage(args: GenerateImageArgs, geminiService
   const filePath = await imageService.saveImage(imageData, {
     outputPath: args.outputPath,
     description: args.description,
-    logoPath: args.logoPath
+    watermarkPath: args.watermarkPath,
+    watermarkPosition: args.watermarkPosition
   });
 
   return {
     content: [
       {
         type: 'text',
-        text: `Image generated successfully with description: "${args.description}"${args.images?.length ? `\nUsing ${args.images.length} context image(s)` : ''}\nSaved to: ${filePath}`,
+        text: `Image generated successfully with description: "${args.description}"${args.images?.length ? `\nUsing ${args.images.length} context image(s)` : ''}${args.watermarkPath ? `\nWatermark: ${args.watermarkPosition || 'bottom-right'}` : ''}\nSaved to: ${filePath}`,
       },
       {
         type: 'image',

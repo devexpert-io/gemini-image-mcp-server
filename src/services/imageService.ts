@@ -11,12 +11,13 @@ export interface ImageData {
 export interface SaveImageOptions {
   outputPath?: string;
   description?: string;
-  logoPath?: string;
+  watermarkPath?: string;
+  watermarkPosition?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 }
 
 export class ImageService {
   async saveImage(imageData: ImageData, options: SaveImageOptions = {}): Promise<string> {
-    const { outputPath, description, logoPath } = options;
+    const { outputPath, description, watermarkPath, watermarkPosition } = options;
 
     // Determine file extension based on mimeType
     const extension = imageData.mimeType === 'image/png' ? '.png' :
@@ -36,9 +37,9 @@ export class ImageService {
     // Convert base64 to buffer
     let buffer = Buffer.from(imageData.base64, 'base64');
 
-    // Add watermark if logoPath is provided
-    if (logoPath && existsSync(resolve(logoPath))) {
-      buffer = Buffer.from(await this.addWatermark(buffer, logoPath));
+    // Add watermark if watermarkPath is provided
+    if (watermarkPath && existsSync(resolve(watermarkPath))) {
+      buffer = Buffer.from(await this.addWatermark(buffer, watermarkPath, watermarkPosition));
     }
 
     // Ensure directory exists and save
@@ -66,39 +67,51 @@ export class ImageService {
     }
   }
 
-  private async addWatermark(imageBuffer: Buffer, logoPath: string): Promise<Buffer> {
-    const resolvedLogoPath = resolve(logoPath);
+  private async addWatermark(
+    imageBuffer: Buffer,
+    watermarkPath: string,
+    position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' = 'bottom-right'
+  ): Promise<Buffer> {
+    const resolvedWatermarkPath = resolve(watermarkPath);
 
     // Get image dimensions
     const imageInfo = await sharp(imageBuffer).metadata();
     const imageWidth = imageInfo.width || 1024;
     const imageHeight = imageInfo.height || 1024;
 
-    // Calculate logo size (25% of image width, maintaining aspect ratio)
-    const logoSize = Math.floor(imageWidth * 0.25);
+    // Calculate watermark size (25% of image width, maintaining aspect ratio)
+    const watermarkSize = Math.floor(imageWidth * 0.25);
 
-    // Resize logo and get actual dimensions
-    const processedLogo = await sharp(resolvedLogoPath)
-      .resize(logoSize, logoSize, {
+    // Resize watermark and get actual dimensions
+    const processedWatermark = await sharp(resolvedWatermarkPath)
+      .resize(watermarkSize, watermarkSize, {
         fit: 'inside',
         withoutEnlargement: true
       })
       .toBuffer();
 
-    // Get actual dimensions of the processed logo
-    const logoInfo = await sharp(processedLogo).metadata();
-    const actualLogoWidth = logoInfo.width || logoSize;
-    const actualLogoHeight = logoInfo.height || logoSize;
+    // Get actual dimensions of the processed watermark
+    const watermarkInfo = await sharp(processedWatermark).metadata();
+    const watermarkWidth = watermarkInfo.width || watermarkSize;
+    const watermarkHeight = watermarkInfo.height || watermarkSize;
 
-    // Add watermark to bottom-right corner with consistent padding
+    // Add watermark in selected corner with consistent padding
     const padding = Math.floor(imageWidth * 0.03); // 3% of image width for consistent spacing
-    const left = imageWidth - actualLogoWidth - padding;
-    const top = imageHeight - actualLogoHeight - padding;
+    let left = padding;
+    let top = padding;
+    const isRight = position.endsWith('right');
+    const isBottom = position.startsWith('bottom');
+    if (isRight) {
+      left = imageWidth - watermarkWidth - padding;
+    }
+    if (isBottom) {
+      top = imageHeight - watermarkHeight - padding;
+    }
 
     return await sharp(imageBuffer)
       .composite([
         {
-          input: processedLogo,
+          input: processedWatermark,
           left,
           top,
           blend: 'over'
