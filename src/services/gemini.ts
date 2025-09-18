@@ -93,8 +93,11 @@ export class GeminiService {
         // Extract image from response
         const candidate = response.response.candidates?.[0];
         if (!candidate?.content?.parts) {
-            throw internalError('Gemini response did not include any content parts', {
+            const finishReason = candidate?.finishReason ?? 'unknown';
+
+            throw internalError(`Gemini finish reason: ${String(finishReason)}`, {
                 reason: 'emptyCandidate',
+                finishReason,
             });
         }
 
