@@ -63,7 +63,7 @@ export class GeminiService {
         });
 
         if (aspectRatio === 'portrait' || aspectRatio === 'landscape') {
-            fullPrompt += '. Use the last image only as a guide for the aspect ratio.'
+            fullPrompt += '. Use the white image only as a guide for the aspect ratio.'
         }
 
         // If images are provided as context, attach them as inline parts
@@ -82,7 +82,7 @@ export class GeminiService {
 
         let response;
         try {
-            console.error(parts)
+            console.error(`Number of parts: ${parts.length}`);
             response = await model.generateContent(parts);
         } catch (error) {
             throw ensureMcpError(error, ErrorCode.InternalError, 'Gemini image generation request failed', {

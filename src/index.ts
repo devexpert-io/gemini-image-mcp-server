@@ -10,8 +10,8 @@ import {
 
 import { GeminiService } from './services/gemini.js';
 import { ImageService } from './services/imageService.js';
-import { generateImageTool, handleGenerateImage } from './tools/index.js';
-import { GenerateImageArgs } from './types';
+import { editImageTool, handleEditImage, generateImageTool, handleGenerateImage } from './tools/index.js';
+import { EditImageArgs, GenerateImageArgs } from './types';
 import { ensureMcpError, invalidParams } from './utils/errors.js';
 
 class GeminiImageMCPServer {
@@ -50,7 +50,7 @@ class GeminiImageMCPServer {
   private setupToolHandlers() {
     this.server.setRequestHandler(ListToolsRequestSchema, async () => {
       return {
-        tools: [generateImageTool],
+        tools: [generateImageTool, editImageTool],
       };
     });
 
@@ -59,6 +59,11 @@ class GeminiImageMCPServer {
         if (request.params.name === 'generate_image') {
           const args = request.params.arguments as unknown as GenerateImageArgs;
           return await handleGenerateImage(args, this.geminiService, this.imageService);
+        }
+
+        if (request.params.name === 'edit_image') {
+          const args = request.params.arguments as unknown as EditImageArgs;
+          return await handleEditImage(args, this.geminiService, this.imageService);
         }
 
         throw invalidParams(`Unknown tool: ${request.params.name}`, {

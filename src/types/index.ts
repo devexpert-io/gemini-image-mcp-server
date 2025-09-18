@@ -7,3 +7,9 @@ export interface GenerateImageArgs {
   watermarkPosition?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   images?: string[]; // Optional array of image paths used as visual context
 }
+
+export interface EditImageArgs {
+  description: string;
+  image: string;
+  outputPath?: string;
+}

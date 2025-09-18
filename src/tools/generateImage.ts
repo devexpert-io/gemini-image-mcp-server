@@ -7,7 +7,8 @@ import { GenerateImageArgs } from '../types';
 
 export const generateImageTool: Tool = {
   name: 'generate_image',
-  description: 'Create an image using Google Gemini AI from a text description, optionally providing one or more context images to guide the result.',
+  description:
+    'Create a new image using Google Gemini AI from a text description, optionally providing reference images to guide the result. Use the `edit_image` tool when you need to modify an existing asset.',
   inputSchema: {
     type: 'object',
     properties: {

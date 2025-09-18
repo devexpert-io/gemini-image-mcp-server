@@ -1,6 +1,6 @@
 # Gemini Image MCP Server
 
-A Model Context Protocol (MCP) server for image generation using Google Gemini AI. Supports optional context images to guide results. Optimized for creating eye‑catching social media images with square (1:1) format by default.
+A Model Context Protocol (MCP) server for image generation and editing using Google Gemini AI. Supports optional context images to guide results and now includes a dedicated edit workflow. Optimized for creating eye‑catching social media images with square (1:1) format by default.
 
 ## Features
 
@@ -8,7 +8,8 @@ A Model Context Protocol (MCP) server for image generation using Google Gemini A
 - 🎨 Multiple aspect ratios (1:1, 16:9, 9:16, 4:3, 3:4)
 - 📱 Optimized for social media with 1:1 format by default
 - 🎯 Custom style support
-- 🧩 Context images to guide or modify results
+- 🧩 Context images to guide generation
+- ✏️ Dedicated edit tool for modifying existing assets without juggling extra options
 - 🏷️ **Watermark support** - Overlay watermark images on generated results
 - 💾 Automatic saving of images to local files
 - 📁 Flexible output path configuration
@@ -63,7 +64,7 @@ export GOOGLE_API_KEY="your-api-key-here"
 
 ### `generate_image`
 
-Creates an image from a text description, optionally using one or more images as visual context.
+Creates a brand-new image from a text description, optionally using one or more images as visual context. Use this tool when you want to generate fresh content.
 
 **Parameters:**
 - `description` (string, required): Detailed description of the desired image.
@@ -82,8 +83,8 @@ Generate an image of a mountain landscape at sunset with warm, minimalist style
 ```
 
 ```
-# With context image (edit-like)
-Generate an image: "Make the sky more dramatic with storm clouds", images: ["./landscape.jpg"], outputPath: "./edited/"
+# With context image to guide composition
+Generate an image: "Create a futuristic city skyline inspired by this photo", images: ["./reference-skyline.jpg"], aspectRatio: "landscape"
 ```
 
 ```
@@ -92,6 +93,27 @@ Generate an image combining style of a logo and a photo, images: ["./photo.jpg",
 ```
 
 When you request the `landscape` or `portrait` orientation, the server automatically appends an invisible helper image (`assets/landscape.png` or `assets/portrait.png`) so Gemini respects the target dimensions.
+
+### `edit_image`
+
+Modifies an existing image using a focused text instruction. This tool keeps the original framing unless you explicitly ask for structural changes.
+
+**Parameters:**
+- `description` (string, required): Instructions describing the edits to apply to the provided image.
+- `image` (string, required): Path to the image file you want to edit (absolute or relative).
+- `outputPath` (string, optional): Where to save the edited result. If omitted, the server uses the working directory and an auto-generated filename.
+
+**Usage Examples:**
+
+```
+# Simple edit
+Edit image: "Soften skin tones and remove flyaway hairs", image: "./headshot.png"
+```
+
+```
+# Heavier retouch
+Edit image: "Turn the product label red and add subtle sparkle highlights", image: "./product-shot.jpg"
+```
 
 ```
 # Custom path and watermark (top-left)
@@ -149,7 +171,8 @@ gemini-image-mcp-server/
 │   │   └── gemini.ts     # Gemini AI service
 │   ├── tools/
 │   │   ├── index.ts      # Tools exports
-│   │   └── generateImage.ts  # Unified image tool (with optional context images)
+│   │   ├── generateImage.ts  # Tool for creating new images
+│   │   └── editImage.ts      # Tool for editing existing images
 │   └── types/
 │       └── index.ts      # Type definitions
 ├── dist/                 # Compiled files
