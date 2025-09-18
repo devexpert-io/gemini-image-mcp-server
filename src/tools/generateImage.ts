@@ -52,10 +52,8 @@ export async function handleGenerateImage(args: GenerateImageArgs, geminiService
     throw new Error('Description is required');
   }
 
-  // Generate image with Gemini
   const imageData = await geminiService.generateImage(args);
 
-  // Save image with watermark if needed
   const filePath = await imageService.saveImage(imageData, {
     outputPath: args.outputPath,
     description: args.description,
@@ -67,12 +65,7 @@ export async function handleGenerateImage(args: GenerateImageArgs, geminiService
     content: [
       {
         type: 'text',
-        text: `Image generated successfully with description: "${args.description}"${args.images?.length ? `\nUsing ${args.images.length} context image(s)` : ''}${args.watermarkPath ? `\nWatermark: ${args.watermarkPosition || 'bottom-right'}` : ''}\nSaved to: ${filePath}`,
-      },
-      {
-        type: 'image',
-        data: imageData.base64,
-        mimeType: imageData.mimeType,
+        text: filePath,
       },
     ],
   };
