@@ -82,7 +82,6 @@ export class GeminiService {
 
         let response;
         try {
-            console.error(`Number of parts: ${parts.length}`);
             response = await model.generateContent(parts);
         } catch (error) {
             throw ensureMcpError(error, ErrorCode.InternalError, 'Gemini image generation request failed', {
