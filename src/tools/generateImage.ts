@@ -28,9 +28,9 @@ export const generateImageTool: Tool = {
       },
       aspectRatio: {
         type: 'string',
-        enum: ['1:1', '16:9', '9:16', '4:3', '3:4'],
-        description: 'Aspect ratio of the image. Default: 1:1 (ideal for social media)',
-        default: '1:1',
+        enum: ['square', 'landscape', 'portrait'],
+        description: 'Aspect ratio preset (square/landscape/portrait).',
+        default: 'square',
       },
       style: {
         type: 'string',

@@ -27,13 +27,3 @@ Thumbs.db
 # Logs
 logs
 *.log
-
-# Generated images (optional - remove if you want to track generated images)
-*.png
-*.jpg
-*.jpeg
-*.webp
-!examples/*.png
-!examples/*.jpg
-!examples/*.jpeg
-!examples/*.webp

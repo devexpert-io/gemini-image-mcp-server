@@ -68,7 +68,7 @@ Creates an image from a text description, optionally using one or more images as
 **Parameters:**
 - `description` (string, required): Detailed description of the desired image.
 - `images` (string[], optional): Array of image paths used as context (absolute or relative). Use this to “edit” or guide style/content.
-- `aspectRatio` (string, optional): Aspect ratio (`1:1`, `16:9`, `9:16`, `4:3`, `3:4`). Default: `1:1`.
+- `aspectRatio` (string, optional): Orientation preset (`square`, `landscape`, `portrait`). Default: `square`.
 - `style` (string, optional): Additional style (e.g., "minimalist", "colorful", "professional", "artistic").
 - `outputPath` (string, optional): Where to save the image. If omitted, saves in current directory.
 - `watermarkPath` (string, optional): Path to watermark image to overlay.
@@ -90,6 +90,8 @@ Generate an image: "Make the sky more dramatic with storm clouds", images: ["./l
 # Multiple context images
 Generate an image combining style of a logo and a photo, images: ["./photo.jpg", "./logo.png"], style: "professional"
 ```
+
+When you request the `landscape` or `portrait` orientation, the server automatically appends an invisible helper image (`assets/landscape.png` or `assets/portrait.png`) so Gemini respects the target dimensions.
 
 ```
 # Custom path and watermark (top-left)
