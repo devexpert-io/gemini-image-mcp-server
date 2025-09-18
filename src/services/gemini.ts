@@ -9,6 +9,7 @@ import {ensureMcpError, internalError, invalidParams} from '../utils/errors.js';
 import {GenerateImageArgs} from '../types';
 
 const ASPECT_HELPER_IMAGES = {
+    square: fileURLToPath(new URL('../../assets/square.png', import.meta.url)),
     landscape: fileURLToPath(new URL('../../assets/landscape.png', import.meta.url)),
     portrait: fileURLToPath(new URL('../../assets/portrait.png', import.meta.url))
 } as const;
@@ -62,8 +63,9 @@ export class GeminiService {
             safetySettings: this.getSafetySettings()
         });
 
-        if (aspectRatio === 'portrait' || aspectRatio === 'landscape') {
-            fullPrompt += '. Use the white image only as a guide for the aspect ratio.'
+        const helperPath = ASPECT_HELPER_IMAGES[aspectRatio];
+        if (helperPath) {
+            fullPrompt += '. Use the white image only as a guide for the aspect ratio.';
         }
 
         // If images are provided as context, attach them as inline parts
@@ -75,8 +77,7 @@ export class GeminiService {
             }
         }
 
-        if (aspectRatio === 'portrait' || aspectRatio === 'landscape') {
-            const helperPath = ASPECT_HELPER_IMAGES[aspectRatio];
+        if (helperPath) {
             parts.push(await toInlinePart(helperPath));
         }
 

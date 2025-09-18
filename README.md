@@ -92,7 +92,7 @@ Generate an image: "Create a futuristic city skyline inspired by this photo", im
 Generate an image combining style of a logo and a photo, images: ["./photo.jpg", "./logo.png"], style: "professional"
 ```
 
-When you request the `landscape` or `portrait` orientation, the server automatically appends an invisible helper image (`assets/landscape.png` or `assets/portrait.png`) so Gemini respects the target dimensions.
+When you request a specific orientation (`square`, `landscape`, or `portrait`), the server automatically appends an invisible helper image (`assets/square.png`, `assets/landscape.png`, or `assets/portrait.png`) so Gemini respects the target dimensions.
 
 ### `edit_image`
 
