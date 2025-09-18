@@ -4,6 +4,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
   CallToolRequestSchema,
+  ErrorCode,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 
@@ -11,6 +12,7 @@ import { GeminiService } from './services/gemini.js';
 import { ImageService } from './services/imageService.js';
 import { generateImageTool, handleGenerateImage } from './tools/index.js';
 import { GenerateImageArgs } from './types';
+import { ensureMcpError, invalidParams } from './utils/errors.js';
 
 class GeminiImageMCPServer {
   private server: Server;
@@ -57,12 +59,32 @@ class GeminiImageMCPServer {
         if (request.params.name === 'generate_image') {
           const args = request.params.arguments as unknown as GenerateImageArgs;
           return await handleGenerateImage(args, this.geminiService, this.imageService);
-        } else {
-          throw new Error(`Unknown tool: ${request.params.name}`);
         }
+
+        throw invalidParams(`Unknown tool: ${request.params.name}`, {
+          tool: request.params.name,
+        });
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        throw new Error(`Error generating image: ${errorMessage}`);
+        const mcpError = ensureMcpError(error, ErrorCode.InternalError, 'Tool execution failed', {
+          tool: request.params.name,
+        });
+
+        const logPayload = {
+          tool: request.params.name,
+          code: mcpError.code,
+          data: mcpError.data,
+        };
+
+        if (mcpError.code === ErrorCode.InvalidParams) {
+          console.warn('[tools/call] Client error', logPayload);
+        } else {
+          console.error('[tools/call] Internal error', {
+            ...logPayload,
+            original: error instanceof Error ? error.stack || error.message : error,
+          });
+        }
+
+        throw mcpError;
       }
     });
   }

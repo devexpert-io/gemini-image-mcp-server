@@ -2,6 +2,9 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/ge
 import { readFile } from 'fs/promises';
 import { resolve, extname } from 'path';
 import { existsSync } from 'fs';
+import { ErrorCode } from '@modelcontextprotocol/sdk/types.js';
+
+import { ensureMcpError, internalError, invalidParams } from '../utils/errors.js';
 import { GenerateImageArgs } from '../types';
 
 export interface ImageData {
@@ -62,9 +65,17 @@ export class GeminiService {
       for (const imgPathRaw of args.images) {
         const imagePath = resolve(imgPathRaw);
         if (!existsSync(imagePath)) {
-          throw new Error(`Context image not found: ${imagePath}`);
+          throw invalidParams(`Context image not found: ${imagePath}`, { imagePath });
         }
-        const buffer = await readFile(imagePath);
+        let buffer: Buffer;
+        try {
+          buffer = await readFile(imagePath);
+        } catch (error) {
+          throw invalidParams(`Unable to read context image: ${imagePath}`, {
+            imagePath,
+            cause: error instanceof Error ? error.message : String(error),
+          });
+        }
         const base64 = buffer.toString('base64');
         const ext = extname(imagePath).toLowerCase();
         const mimeType = ext === '.png' ? 'image/png' :
@@ -74,12 +85,21 @@ export class GeminiService {
       }
     }
 
-    const response = await model.generateContent(parts);
+    let response;
+    try {
+      response = await model.generateContent(parts);
+    } catch (error) {
+      throw ensureMcpError(error, ErrorCode.InternalError, 'Gemini image generation request failed', {
+        stage: 'GeminiService.generateContent',
+      });
+    }
 
     // Extract image from response
     const candidate = response.response.candidates?.[0];
     if (!candidate?.content?.parts) {
-      throw new Error('Could not generate image');
+      throw internalError('Gemini response did not include any content parts', {
+        reason: 'emptyCandidate',
+      });
     }
 
     for (const part of candidate.content.parts) {
@@ -91,7 +111,9 @@ export class GeminiService {
       }
     }
 
-    throw new Error('No image found in response');
+    throw internalError('Gemini response did not contain image data', {
+      reason: 'missingInlineData',
+    });
   }
 
   // Editing is unified into generation with context images.

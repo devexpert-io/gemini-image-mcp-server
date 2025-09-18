@@ -2,6 +2,9 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join, resolve, extname } from 'path';
 import { existsSync } from 'fs';
 import sharp from 'sharp';
+import { ErrorCode } from '@modelcontextprotocol/sdk/types.js';
+
+import { ensureMcpError, invalidParams } from '../utils/errors.js';
 
 export interface ImageData {
   base64: string;
@@ -35,16 +38,43 @@ export class ImageService {
     const finalPath = this.resolvePath(outputPath, filename);
 
     // Convert base64 to buffer
-    let buffer = Buffer.from(imageData.base64, 'base64');
-
-    // Add watermark if watermarkPath is provided
-    if (watermarkPath && existsSync(resolve(watermarkPath))) {
-      buffer = Buffer.from(await this.addWatermark(buffer, watermarkPath, watermarkPosition));
+    let buffer: Buffer;
+    try {
+      buffer = Buffer.from(imageData.base64, 'base64');
+    } catch (error) {
+      throw invalidParams('Generated image data was not valid base64', {
+        cause: error instanceof Error ? error.message : String(error),
+      });
     }
 
-    // Ensure directory exists and save
-    await this.ensureDirectoryExists(join(finalPath, '..'));
-    await writeFile(finalPath, buffer);
+    let resolvedWatermarkPath: string | undefined;
+    if (watermarkPath) {
+      resolvedWatermarkPath = resolve(watermarkPath);
+      if (!existsSync(resolvedWatermarkPath)) {
+        throw invalidParams(`Watermark image not found: ${resolvedWatermarkPath}`, {
+          watermarkPath: resolvedWatermarkPath,
+        });
+      }
+      try {
+        buffer = Buffer.from(
+          await this.addWatermark(buffer, resolvedWatermarkPath, watermarkPosition)
+        );
+      } catch (error) {
+        throw ensureMcpError(error, ErrorCode.InternalError, 'Failed to apply watermark', {
+          watermarkPath: resolvedWatermarkPath,
+        });
+      }
+    }
+
+    try {
+      await this.ensureDirectoryExists(join(finalPath, '..'));
+      await writeFile(finalPath, buffer);
+    } catch (error) {
+      throw ensureMcpError(error, ErrorCode.InternalError, 'Failed to save generated image to disk', {
+        outputPath: outputPath ? resolve(outputPath) : undefined,
+        finalPath,
+      });
+    }
 
     return finalPath;
   }

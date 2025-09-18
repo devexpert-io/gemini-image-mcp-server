@@ -1,6 +1,8 @@
-import { Tool } from '@modelcontextprotocol/sdk/types.js';
+import { ErrorCode, Tool } from '@modelcontextprotocol/sdk/types.js';
+
 import { GeminiService } from '../services/gemini.js';
 import { ImageService } from '../services/imageService.js';
+import { ensureMcpError, invalidParams } from '../utils/errors.js';
 import { GenerateImageArgs } from '../types';
 
 export const generateImageTool: Tool = {
@@ -47,26 +49,36 @@ export const generateImageTool: Tool = {
   },
 };
 
-export async function handleGenerateImage(args: GenerateImageArgs, geminiService: GeminiService, imageService: ImageService) {
-  if (!args.description) {
-    throw new Error('Description is required');
+export async function handleGenerateImage(
+  args: GenerateImageArgs,
+  geminiService: GeminiService,
+  imageService: ImageService
+) {
+  if (!args.description || !args.description.trim()) {
+    throw invalidParams('Description is required to generate an image');
   }
 
-  const imageData = await geminiService.generateImage(args);
+  try {
+    const imageData = await geminiService.generateImage(args);
 
-  const filePath = await imageService.saveImage(imageData, {
-    outputPath: args.outputPath,
-    description: args.description,
-    watermarkPath: args.watermarkPath,
-    watermarkPosition: args.watermarkPosition
-  });
+    const filePath = await imageService.saveImage(imageData, {
+      outputPath: args.outputPath,
+      description: args.description,
+      watermarkPath: args.watermarkPath,
+      watermarkPosition: args.watermarkPosition
+    });
 
-  return {
-    content: [
-      {
-        type: 'text',
-        text: filePath,
-      },
-    ],
-  };
+    return {
+      content: [
+        {
+          type: 'text',
+          text: filePath,
+        },
+      ],
+    };
+  } catch (error) {
+    throw ensureMcpError(error, ErrorCode.InternalError, 'Failed to generate image', {
+      stage: 'generate_image.tool',
+    });
+  }
 }
