@@ -1,12 +1,12 @@
-import {GoogleGenerativeAI, HarmBlockThreshold, HarmCategory} from '@google/generative-ai';
-import {readFile} from 'fs/promises';
-import {extname, isAbsolute, resolve} from 'path';
-import {existsSync} from 'fs';
-import {fileURLToPath} from 'url';
-import {ErrorCode} from '@modelcontextprotocol/sdk/types.js';
+import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from '@google/generative-ai';
+import { readFile } from 'fs/promises';
+import { extname, isAbsolute, resolve } from 'path';
+import { existsSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 
-import {ensureMcpError, internalError, invalidParams} from '../utils/errors.js';
-import {GenerateImageArgs} from '../types';
+import { ensureMcpError, internalError, invalidParams } from '../utils/errors.js';
+import { GenerateImageArgs } from '../types';
 
 const ASPECT_HELPER_IMAGES = {
     square: fileURLToPath(new URL('../../assets/square.png', import.meta.url)),
@@ -49,7 +49,16 @@ export class GeminiService {
 
     async generateImage(args: GenerateImageArgs): Promise<ImageData> {
         const aspectRatio = (args.aspectRatio ?? 'square') as 'square' | 'portrait' | 'landscape';
+        const helperPath = ASPECT_HELPER_IMAGES[aspectRatio];
+        return this._generateImageInternal(args, helperPath);
+    }
 
+    async editImage(args: GenerateImageArgs): Promise<ImageData> {
+        // When editing, don't use aspect ratio helper to preserve original dimensions
+        return this._generateImageInternal(args, null);
+    }
+
+    private async _generateImageInternal(args: GenerateImageArgs, helperPath: string | null): Promise<ImageData> {
         // Build optimized prompt for image generation
         let fullPrompt = `${args.description}`;
 
@@ -58,18 +67,17 @@ export class GeminiService {
             fullPrompt += ` The style should be ${args.style}.`;
         }
 
+        if (helperPath) {
+            fullPrompt += '. Use the white image only as a guide for the aspect ratio.';
+        }
+
         const model = this.genAI.getGenerativeModel({
             model: 'gemini-2.5-flash-image-preview',
             safetySettings: this.getSafetySettings()
         });
 
-        const helperPath = ASPECT_HELPER_IMAGES[aspectRatio];
-        if (helperPath) {
-            fullPrompt += '. Use the white image only as a guide for the aspect ratio.';
-        }
-
         // If images are provided as context, attach them as inline parts
-        const parts: any[] = [{text: fullPrompt}];
+        const parts: any[] = [{ text: fullPrompt }];
 
         if (args.images) {
             for (const userImage of args.images) {
@@ -121,7 +129,7 @@ type InlinePart = { inlineData: { mimeType: string; data: string } };
 async function toInlinePart(imgPathRaw: string): Promise<InlinePart> {
     const imagePath = isAbsolute(imgPathRaw) ? imgPathRaw : resolve(imgPathRaw);
     if (!existsSync(imagePath)) {
-        throw invalidParams(`Context image not found: ${imagePath}`, {imagePath});
+        throw invalidParams(`Context image not found: ${imagePath}`, { imagePath });
     }
 
     let buffer: Buffer;
@@ -140,5 +148,5 @@ async function toInlinePart(imgPathRaw: string): Promise<InlinePart> {
         ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' :
             ext === '.webp' ? 'image/webp' : 'image/png';
 
-    return {inlineData: {mimeType, data: base64}};
+    return { inlineData: { mimeType, data: base64 } };
 }

@@ -46,7 +46,7 @@ export async function handleEditImage(
   }
 
   try {
-    const imageData = await geminiService.generateImage({
+    const imageData = await geminiService.editImage({
       description,
       images: [args.image],
     });
