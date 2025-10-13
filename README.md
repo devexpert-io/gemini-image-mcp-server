@@ -60,6 +60,37 @@ export GOOGLE_API_KEY="your-api-key-here"
 }
 ```
 
+## Command Line Interface
+
+In addition to the MCP server, the project now ships with a CLI for quick terminal-friendly workflows.
+
+1. Build the project once:
+   ```bash
+   npm run build
+   ```
+
+2. Make sure `GOOGLE_API_KEY` is set in your environment.
+
+3. Explore the CLI:
+   ```bash
+   node dist/cli.js --help
+   # or, after publishing/packing:
+   gemini-image --help
+   ```
+
+### Commands
+
+- `gemini-image generate`: Create new imagery from a text prompt.
+  ```bash
+  gemini-image generate --prompt "A banana astronaut on Mars" --output ./images/
+  ```
+- `gemini-image edit`: Apply instructions to an existing image.
+  ```bash
+  gemini-image edit --prompt "Add neon lights to the skyline" --input ./images/city.png
+  ```
+
+Both commands support `--help` for detailed, friendly option descriptions. CLI option names are intentionally concise (for example `--prompt`, `--context`, `--input`) so they are easier to memorize than the MCP tool identifiers.
+
 ## Available Tools
 
 ### `generate_image`
@@ -160,6 +191,7 @@ watermarkPath: "./watermark.jpg"
 - `npm run build`: Compiles TypeScript to JavaScript
 - `npm run dev`: Development mode with automatic reload
 - `npm start`: Runs the compiled server
+- `npm run cli`: Runs the CLI entry directly (`node dist/cli.js`)
 
 ### Project Structure
 
@@ -167,8 +199,11 @@ watermarkPath: "./watermark.jpg"
 gemini-image-mcp-server/
 ├── src/
 │   ├── index.ts          # Main server entry point
+│   ├── cli.ts            # CLI entry point (generate/edit commands)
 │   ├── services/
-│   │   └── gemini.ts     # Gemini AI service
+│   │   ├── gemini.ts         # Gemini AI calls
+│   │   ├── imageService.ts   # File system + watermark handling
+│   │   └── serviceFactory.ts # Shared initialization helpers
 │   ├── tools/
 │   │   ├── index.ts      # Tools exports
 │   │   ├── generateImage.ts  # Tool for creating new images

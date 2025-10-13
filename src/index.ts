@@ -8,11 +8,12 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 
-import { GeminiService } from './services/gemini.js';
-import { ImageService } from './services/imageService.js';
+import type { GeminiService } from './services/gemini.js';
+import type { ImageService } from './services/imageService.js';
 import { editImageTool, handleEditImage, generateImageTool, handleGenerateImage } from './tools/index.js';
 import { EditImageArgs, GenerateImageArgs } from './types';
 import { ensureMcpError, invalidParams } from './utils/errors.js';
+import { createGeminiImageServices, MissingEnvironmentError } from './services/serviceFactory.js';
 
 class GeminiImageMCPServer {
   private server: Server;
@@ -37,14 +38,20 @@ class GeminiImageMCPServer {
   }
 
   private initializeServices() {
-    const apiKey = process.env.GOOGLE_API_KEY;
-    if (!apiKey) {
-      console.error('Error: GOOGLE_API_KEY environment variable is required');
+    try {
+      const services = createGeminiImageServices();
+      this.geminiService = services.geminiService;
+      this.imageService = services.imageService;
+    } catch (error) {
+      if (error instanceof MissingEnvironmentError) {
+        console.error(`Error: ${error.message}`);
+      } else {
+        console.error('Error: Failed to initialize services', {
+          cause: error instanceof Error ? error.message : error,
+        });
+      }
       process.exit(1);
     }
-
-    this.geminiService = new GeminiService(apiKey);
-    this.imageService = new ImageService();
   }
 
   private setupToolHandlers() {

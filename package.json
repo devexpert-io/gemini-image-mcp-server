@@ -3,11 +3,15 @@
   "version": "1.0.0",
   "description": "MCP Server for generating and editing images with Google Gemini AI",
   "main": "dist/index.js",
+  "bin": {
+    "gemini-image": "dist/cli.js"
+  },
   "type": "module",
   "scripts": {
     "build": "tsc && node scripts/copyAssets.mjs",
     "start": "node dist/index.js",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "cli": "node dist/cli.js"
   },
   "keywords": [
     "mcp",
