@@ -2,6 +2,10 @@
 
 A Model Context Protocol (MCP) server for image generation and editing using Google Gemini AI. Supports optional context images to guide results and now includes a dedicated edit workflow. Optimized for creating eye‑catching social media images with square (1:1) format by default.
 
+<a href="https://glama.ai/mcp/servers/@devexpert-io/gemini-image-mcp-server">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@devexpert-io/gemini-image-mcp-server/badge" alt="Gemini Image Server MCP server" />
+</a>
+
 ## Features
 
 - ✨ Image generation with Google Gemini AI
@@ -99,7 +103,7 @@ Creates a brand-new image from a text description, optionally using one or more 
 
 **Parameters:**
 - `description` (string, required): Detailed description of the desired image.
-- `images` (string[], optional): Array of image paths used as context (absolute or relative). Use this to “edit” or guide style/content.
+- `images` (string[], optional): Array of image paths used as context (absolute or relative). Use this to "edit" or guide style/content.
 - `aspectRatio` (string, optional): Orientation preset (`square`, `landscape`, `portrait`). Default: `square`.
 - `style` (string, optional): Additional style (e.g., "minimalist", "colorful", "professional", "artistic").
 - `outputPath` (string, optional): Where to save the image. If omitted, saves in current directory.
