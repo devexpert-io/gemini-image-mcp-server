@@ -72,7 +72,7 @@ export class GeminiService {
         }
 
         const model = this.genAI.getGenerativeModel({
-            model: 'gemini-2.5-flash-image-preview',
+            model: 'gemini-3-pro-image-preview',
             safetySettings: this.getSafetySettings()
         });
 
